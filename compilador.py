@@ -5,6 +5,7 @@ Agustín Brogliatti
 Luciano Esteban
 '''
 import sys
+import os
 
 
 path_programa = sys.argv[1]
@@ -51,18 +52,25 @@ for linea in lineas_programa:
 
 
 # Log para testing de tokens revisados
-# print(programa)
 
-
-# Cambiar límite de [:5] a que sea dinámico por punto (esto ofrecería una
-# mayor escalabilidad en el cambio de nombre de la extensión del lenguaje)
-asm_path = path_programa[:55] + ".asm"
-salida = open(asm_path, "w")
-
+'''
+Guardado de literales
+'''
+string_literales = []
+for ip in range(len(programa)):
+    if programa[ip] == "PRINT":
+        string_literal = programa[ip+1]
+        programa[ip+1] = len(string_literales)
+        string_literales.append(string_literal)
 
 '''
 Compilación a Assembly
 '''
+
+# Cambiar límite de [:5] a que sea dinámico por punto (esto ofrecería una
+# mayor escalabilidad en el cambio de nombre de la extensión del lenguaje)
+asm_path = path_programa.rsplit('.', 1)[0] + ".asm"
+salida = open(asm_path, "w")
 
 # Acá especificamos que vamos a hacer un programa sistemas de 64 bits
 # y que la a tener direccionamiento relativo
@@ -75,18 +83,21 @@ default rel
 
 
 # Sección de inicialización de variables
-salida.write(""" -- variables --
+salida.write("""; -- variables --
 section .bss
+leer_numero resq 1 ; 64-bits int = 8 bytes
 """)
-
 
 # Sección de inicialización de constantes 
-salida.write(""" -- constants --
+salida.write("""; -- constants --
 section .data
-""")
+leer_formato db "%d", 0 ; el formato de string para scanf
+""") 
+for i, string_literal in enumerate(string_literales):
+    salida.write(f"string_literal_{i} db \"{string_literal}\", 0\n")
 
 # Sección de lógica en Assembly:
-salida.write(""" -- Entry Point --
+salida.write("""; -- Entry Point --
 section .text
 global main
 extern ExitProcess
@@ -108,9 +119,9 @@ while ip < len(programa):
 
     if codigo_op.endswith(":"):
         salida.write("; -- Label ---\n")
-        salida.write(f"{codigo_op}\n")
+        salida.write(f"\t{codigo_op}\n")
     elif codigo_op == "PUSH":
-        numero = codigo_op[ip]
+        numero = programa[ip]
         ip += 1
 
         salida.write("; -- PUSH ---\n")
@@ -119,7 +130,7 @@ while ip < len(programa):
         salida.write("; -- POP ---\n")
         salida.write("\tPOP\n")
     elif codigo_op == "ADD":
-        salida.write(";-- ADD ---\n")
+        salida.write("; -- ADD ---\n")
         # Alternativa larga para el comando ADD (la dejamos como curiosidad)
         # salida.write("\nPOP rax\n")
         # salida.write("\nPOP rbx\n")
@@ -132,22 +143,29 @@ while ip < len(programa):
         salida.write("\tPOP rax\n")
         salida.write("\tSUB qword [rsp], rax\n")
     elif codigo_op == "PRINT":
-        str_literal_index = programa[ip]
+        string_literal_index = programa[ip]
         ip += 1
 
         salida.write("; -- PRINT ---\n")
-        salida.write("; TODAVIA SIN IMPLEMENTAR \n")
+        salida.write(f"\tLEA rcx, string_literal_{string_literal_index}\n")
+        salida.write(f"\tXOR eax, eax\n")
+        salida.write(f"\tCALL printf\n")
     elif codigo_op == "READ":
         salida.write("; -- READ ---\n")
-        salida.write("; TODAVIA SIN IMPLEMENTAR \n")
+        salida.write(f"\tLEA rcx, leer_formato\n")
+        salida.write(f"\tLEA rdx, leer_numero\n")
+        salida.write(f"\tXOR eax, eax\n")
+        salida.write(f"\tCALL scanf\n")
+        salida.write(f"\tPUSH qword [leer_numero]\n")
+
     elif codigo_op == "JUMP.EQ.0":
         etiqueta = programa[ip]
         ip += 1
 
-        salida.write("; -- JUMP.EQ.0\n")
-        salida.write("\nCMP qword [rsp], 0\n")
+        salida.write("; -- JUMP.EQ.0 ---\n")
+        salida.write("\tCMP qword [rsp], 0\n")
         salida.write(f"\tJE {etiqueta}\n")
-    elif codigo_op == "JUMP.GET.0":
+    elif codigo_op == "JUMP.GT.0":
         etiqueta = programa[ip]
         ip += 1
 
@@ -155,12 +173,22 @@ while ip < len(programa):
         salida.write("\tCMP qword [rsp], 0\n")
         salida.write(f"\tJG {etiqueta}\n")
     elif codigo_op == "HALT":
-        salida.write(" -- HALT ---\n")
-        salida.write("\tJMP EXIT_LABEL")
+        salida.write("; -- HALT ---\n")
+        salida.write("\tJMP EXIT_LABEL\n")
 
 
-salida.write("EXIT_lABEL:\n")
+salida.write("EXIT_LABEL:\n")
 salida.write("\tXOR rax, rax\n")
 salida.write("\tCALL ExitProcess\n")
 
 salida.close()
+
+#Ojo con esto porque hay que tener gcc y nams instalado correctamente en el sistema.
+#sino compilar el archivo .asm en un compilador web
+print("[CMD] Assembling")
+os.system(f"nasm -f elf64 {asm_path}")
+print("[CMD] Linking")
+os.system(f"gcc -o {asm_path[:-4] + '.exe'} {asm_path[:-3]+'o'}")
+
+print("[CMD] Running")
+os.system(f"{asm_path[:-4] + '.exe'}")
