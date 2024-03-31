@@ -10,7 +10,7 @@ import os
 
 path_programa = sys.argv[1]
 
-# Lectura de líneas de archivo
+# Lectura de líneas de archivo.
 lineas_programa = []
 with open(path_programa, "r") as archivo_programa:
     lineas_programa = [linea.strip() for linea in archivo_programa.readlines()]
@@ -51,7 +51,21 @@ for linea in lineas_programa:
         programa.append(etiqueta)
 
 
-# Log para testing de tokens revisados
+# Log para testing de tokens revisados.
+# print(programa)
+
+
+'''
+Libro que mantiene los literales de string (texto a compilar, lo que se
+considera un string por el compilador nuevo).
+'''
+
+str_literales = []
+for ip in range(len(programa)):
+    if programa[ip] == "PRINT":
+        str_literal = programa[ip + 1]
+        programa[ip + 1] = len(str_literales)
+        str_literales.append(str_literal)
 
 '''
 Guardado de literales
@@ -67,34 +81,41 @@ for ip in range(len(programa)):
 Compilación a Assembly
 '''
 
-# Cambiar límite de [:5] a que sea dinámico por punto (esto ofrecería una
-# mayor escalabilidad en el cambio de nombre de la extensión del lenguaje)
 asm_path = path_programa.rsplit('.', 1)[0] + ".asm"
 salida = open(asm_path, "w")
 
+
 # Acá especificamos que vamos a hacer un programa sistemas de 64 bits
-# y que la a tener direccionamiento relativo
+# y que la a tener direccionamiento relativo.
 salida.write("""; -- header ---
 bits 64
 default rel
 """)
 
-# A partir de este punto se crean 3 secciones distintas en el archivo assembly
+# A partir de este punto se crean 3 secciones distintas en el archivo assembly.
 
 
-# Sección de inicialización de variables
+# Sección de inicialización de variables.
 salida.write("""; -- variables --
 section .bss
 leer_numero resq 1 ; 64-bits int = 8 bytes
 """)
 
-# Sección de inicialización de constantes 
+
+# Sección de inicialización de constantes.
 salida.write("""; -- constants --
 section .data
 leer_formato db "%d", 0 ; el formato de string para scanf
 """) 
 for i, string_literal in enumerate(string_literales):
     salida.write(f"string_literal_{i} db \"{string_literal}\", 0\n")
+
+for idx, str_literal in enumerate(str_literales):
+    # Especificar un "0" al final implica que cada string debe terminar
+    # con un terminador núlo.
+    # Especificar "db"significa que cada carácter debe ser guardado en un byte.
+
+    salida.write(f"str_literal_{idx} db \"{str_literal}\", 0\n")
 
 # Sección de lógica en Assembly:
 salida.write("""; -- Entry Point --
@@ -183,12 +204,15 @@ salida.write("\tCALL ExitProcess\n")
 
 salida.close()
 
-#Ojo con esto porque hay que tener gcc y nams instalado correctamente en el sistema.
-#sino compilar el archivo .asm en un compilador web
+
+# Ojo con esto porque hay que tener "gcc" y "nams" instalado en el sistema,
+# sino habría que compilar el archivo .asm en un compilador web.
 print("[CMD] Assembling")
 os.system(f"nasm -f elf64 {asm_path}")
+
 print("[CMD] Linking")
-os.system(f"gcc -o {asm_path[:-4] + '.exe'} {asm_path[:-3]+'o'}")
+print(f"gcc -o {asm_path[:-4] + '.exe'} {asm_path[:-3] + 'o'}")
+os.system(f"gcc -o {asm_path[:-4] + '.exe'} {asm_path[:-3] + 'o'}")
 
 print("[CMD] Running")
 os.system(f"{asm_path[:-4] + '.exe'}")
