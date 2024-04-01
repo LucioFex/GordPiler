@@ -67,15 +67,6 @@ for ip in range(len(programa)):
         programa[ip + 1] = len(str_literales)
         str_literales.append(str_literal)
 
-'''
-Guardado de literales
-'''
-string_literales = []
-for ip in range(len(programa)):
-    if programa[ip] == "PRINT":
-        string_literal = programa[ip+1]
-        programa[ip+1] = len(string_literales)
-        string_literales.append(string_literal)
 
 '''
 Compilación a Assembly
@@ -106,22 +97,21 @@ leer_numero resq 1 ; 64-bits int = 8 bytes
 salida.write("""; -- constants --
 section .data
 leer_formato db "%d", 0 ; el formato de string para scanf
-""") 
-for i, string_literal in enumerate(string_literales):
-    salida.write(f"string_literal_{i} db \"{string_literal}\", 0\n")
+""")
 
+
+# Especificar un "0" al final implica que cada string debe terminar
+# con un terminador núlo.
+# Especificar "db"significa que cada carácter debe ser guardado en un byte.
 for idx, str_literal in enumerate(str_literales):
-    # Especificar un "0" al final implica que cada string debe terminar
-    # con un terminador núlo.
-    # Especificar "db"significa que cada carácter debe ser guardado en un byte.
-
     salida.write(f"str_literal_{idx} db \"{str_literal}\", 0\n")
+salida.write("fmt db \"Hello, world from assembly!\", 0\n")
 
 # Sección de lógica en Assembly:
 salida.write("""; -- Entry Point --
 section .text
 global main
-extern ExitProcess
+extern exit
 extern printf
 extern scanf
 
@@ -164,20 +154,20 @@ while ip < len(programa):
         salida.write("\tPOP rax\n")
         salida.write("\tSUB qword [rsp], rax\n")
     elif codigo_op == "PRINT":
-        string_literal_index = programa[ip]
+        str_literal_index = programa[ip]
         ip += 1
-
         salida.write("; -- PRINT ---\n")
-        salida.write(f"\tLEA rcx, string_literal_{string_literal_index}\n")
-        salida.write(f"\tXOR eax, eax\n")
-        salida.write(f"\tCALL printf\n")
+        salida.write(f"\tLEA rcx, str_literal_{str_literal_index}\n")
+        salida.write("\tXOR eax, eax\n")
+        salida.write("\tcall printf wrt ..plt\n")
     elif codigo_op == "READ":
         salida.write("; -- READ ---\n")
-        salida.write(f"\tLEA rcx, leer_formato\n")
-        salida.write(f"\tLEA rdx, leer_numero\n")
-        salida.write(f"\tXOR eax, eax\n")
-        salida.write(f"\tCALL scanf\n")
-        salida.write(f"\tPUSH qword [leer_numero]\n")
+        salida.write("; TODAVIA SIN IMPLEMENTAR \n")
+        salida.write("\tLEA rcx, leer_formato\n")
+        salida.write("\tLEA rdx, leer_numero\n")
+        salida.write("\tXOR eax, eax\n")
+        salida.write("\tCALL scanf\n")
+        salida.write("\tPUSH qword [leer_numero]\n")
 
     elif codigo_op == "JUMP.EQ.0":
         etiqueta = programa[ip]
@@ -200,7 +190,7 @@ while ip < len(programa):
 
 salida.write("EXIT_LABEL:\n")
 salida.write("\tXOR rax, rax\n")
-salida.write("\tCALL ExitProcess\n")
+salida.write("\tCALL exit\n")
 
 salida.close()
 
@@ -208,11 +198,16 @@ salida.close()
 # Ojo con esto porque hay que tener "gcc" y "nams" instalado en el sistema,
 # sino habría que compilar el archivo .asm en un compilador web.
 print("[CMD] Assembling")
-os.system(f"nasm -f elf64 {asm_path}")
+comando = f"nasm -felf64 {asm_path} -o {asm_path[:-4] + '.o'}"
+print(comando)
+os.system(comando)
 
 print("[CMD] Linking")
-print(f"gcc -o {asm_path[:-4] + '.exe'} {asm_path[:-3] + 'o'}")
-os.system(f"gcc -o {asm_path[:-4] + '.exe'} {asm_path[:-3] + 'o'}")
+comando = f"gcc -o {asm_path[:-4] + '.out'} {asm_path[:-3] + 'o'} -no-pie -lc"
+print(comando)
+os.system(comando)
 
 print("[CMD] Running")
-os.system(f"{asm_path[:-4] + '.exe'}")
+comando = f"./{asm_path[:-4] + '.out'}"
+print(comando)
+os.system(comando)
