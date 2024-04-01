@@ -46,7 +46,7 @@ HALT
 L1:
 PRINT "equal"
 HALT
-
+```
 
 ## Autores
 
