@@ -7,9 +7,11 @@ Luciano Esteban
 import sys
 import os
 
-
+#Path del pograma .gord que queremos compilar a .asm
 path_programa = sys.argv[1]
 
+#Revisamos si el script contiene el parametro verbose
+#Verbose corre el script en bash mostrando asi mas detalles
 try:
     if sys.argv[2] == "verbose":
         verbose = True
@@ -21,13 +23,13 @@ lineas_programa = []
 with open(path_programa, "r") as archivo_programa:
     lineas_programa = [linea.strip() for linea in archivo_programa.readlines()]
 
-
+#Aqui vamos a almacenar todas instrucciones del programa en lenguaje .gord
 programa = []
 
-# Conversor:
+# Conversor, formateamos los typos segun cada operación:
 
 for linea in lineas_programa:
-    partes = linea.split(" ")
+    partes = linea.split(" ") #capturamos los distintos tokens y el valor si es el caso
     codigo_op = partes[0]  # Código de operación
 
     # Se revisa por líneas vacías
@@ -40,7 +42,7 @@ for linea in lineas_programa:
     # Se maneja cada código de operación
 
     if codigo_op == "PUSH":
-        # Se espera un número
+        # Se espera un número junto a este token
         numero = int(partes[1])
         programa.append(numero)
     elif codigo_op == "PRINT":
@@ -77,7 +79,7 @@ for ip in range(len(programa)):
 '''
 Compilación a Assembly
 '''
-
+#creamos el archivo .asm
 asm_path = path_programa.rsplit('.', 1)[0] + ".asm"
 salida = open(asm_path, "w")
 
@@ -130,7 +132,8 @@ main:
 
 ip = 0  # IP: Instrucción puntero (instruction pointer)
 
-while ip < len(programa):
+#en este while comenzamos a escribir las instrucciones en .asm
+while ip < len(programa): 
     codigo_op = programa[ip]
     ip += 1
 
@@ -153,19 +156,22 @@ while ip < len(programa):
         # salida.write("\nPOP rbx\n")
         # salida.write("\nADD rbx, rax\n")
         # salida.write("\nPUSH rbx\n")
-        salida.write("\tPOP rax\n")
-        salida.write("\tADD qword [rsp], rax\n")  # qword indica 8 bits
+        salida.write("\tPOP rax\n") # Extrae el primer valor de la pila a rax
+        salida.write("\tADD qword [rsp], rax\n")
+        # Suma el valor extraído al valor en la cima de la pila 
+        # qword indica 8 bits
     elif codigo_op == "SUB":
         salida.write("; -- SUB ---\n")
-        salida.write("\tPOP rax\n")
-        salida.write("\tSUB qword [rsp], rax\n")
+        salida.write("\tPOP rax\n") # Extrae el primer valor de la pila a rax
+        salida.write("\tSUB qword [rsp], rax\n") # Resta el valor extraído al valor en la cima de la pila
     elif codigo_op == "PRINT":
         str_literal_index = programa[ip]
         ip += 1
         salida.write("; -- PRINT ---\n")
+        # Carga la dirección del literal de cadena a rcx
         salida.write(f"\tLEA rcx, str_literal_{str_literal_index}\n")
-        salida.write("\tXOR eax, eax\n")
-        salida.write("\tCALL printf\n")
+        salida.write("\tXOR eax, eax\n") # Limpia eax (registro de retorno de función)
+        salida.write("\tCALL printf\n") # Llama a la función printf para imprimir la cadena
     elif codigo_op == "READ":
         salida.write("; -- READ ---\n")
         salida.write("; TODAVIA SIN IMPLEMENTAR \n")
@@ -179,21 +185,21 @@ while ip < len(programa):
         etiqueta = programa[ip]
         ip += 1
 
-        salida.write("; -- JUMP.EQ.0 ---\n")
-        salida.write("\tCMP qword [rsp], 0\n")
-        salida.write(f"\tJE {etiqueta}\n")
+        salida.write("; -- JUMP.EQ.0 ---\n") 
+        salida.write("\tCMP qword [rsp], 0\n") # Compara el valor en la cima de la pila con cero
+        salida.write(f"\tJE {etiqueta}\n") # Salta a la etiqueta especificada si el valor es igual a cero
     elif codigo_op == "JUMP.GT.0":
         etiqueta = programa[ip]
         ip += 1
 
         salida.write("; -- JUMP.GT.0 ---\n")
-        salida.write("\tCMP qword [rsp], 0\n")
-        salida.write(f"\tJG {etiqueta}\n")
+        salida.write("\tCMP qword [rsp], 0\n") # Compara el valor en la cima de la pila con cero
+        salida.write(f"\tJG {etiqueta}\n")  # Salta a la etiqueta especificada si el valor es mayor que cero
     elif codigo_op == "HALT":
         salida.write("; -- HALT ---\n")
         salida.write("\tJMP EXIT_LABEL\n")
 
-
+# código para la salida del programa
 salida.write("EXIT_LABEL:\n")
 salida.write("\tXOR rax, rax\n")
 salida.write("\tCALL exit\n")
@@ -202,7 +208,7 @@ salida.close()
 
 
 # Ojo con esto porque hay que tener "gcc" y "nams" instalado en el sistema,
-# sino habría que compilar el archivo .asm en un compilador web.
+# otra alternativa es ensamblar en un proveedor web que lea .asm
 print("[CMD] Assembling")
 comando = f"nasm -felf64 {asm_path} -o {asm_path[:-4] + '.o'}"
 print(comando, "\n") if verbose else None
