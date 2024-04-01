@@ -10,6 +10,12 @@ import os
 
 path_programa = sys.argv[1]
 
+try:
+    if sys.argv[2] == "verbose":
+        verbose = True
+except:
+    verbose = False
+
 # Lectura de líneas de archivo.
 lineas_programa = []
 with open(path_programa, "r") as archivo_programa:
@@ -105,7 +111,7 @@ leer_formato db "%d", 0 ; el formato de string para scanf
 # Especificar "db"significa que cada carácter debe ser guardado en un byte.
 for idx, str_literal in enumerate(str_literales):
     salida.write(f"str_literal_{idx} db \"{str_literal}\", 0\n")
-salida.write("fmt db \"Hello, world from assembly!\", 0\n")
+# salida.write("fmt db \"Hello, world from assembly!\", 0\n")
 
 # Sección de lógica en Assembly:
 salida.write("""; -- Entry Point --
@@ -118,7 +124,7 @@ extern scanf
 main:
 \tPUSH rbp
 \tMOV rbp, rsp
-\tSUB rsp, 32
+\tSUB rsp, 64
 """)
 
 
@@ -159,7 +165,7 @@ while ip < len(programa):
         salida.write("; -- PRINT ---\n")
         salida.write(f"\tLEA rcx, str_literal_{str_literal_index}\n")
         salida.write("\tXOR eax, eax\n")
-        salida.write("\tcall printf wrt ..plt\n")
+        salida.write("\tCALL printf\n")
     elif codigo_op == "READ":
         salida.write("; -- READ ---\n")
         salida.write("; TODAVIA SIN IMPLEMENTAR \n")
@@ -199,15 +205,21 @@ salida.close()
 # sino habría que compilar el archivo .asm en un compilador web.
 print("[CMD] Assembling")
 comando = f"nasm -felf64 {asm_path} -o {asm_path[:-4] + '.o'}"
-print(comando)
+print(comando, "\n") if verbose else None
 os.system(comando)
 
 print("[CMD] Linking")
-comando = f"gcc -o {asm_path[:-4] + '.out'} {asm_path[:-3] + 'o'} -no-pie -lc"
-print(comando)
+comando = f"gcc -o {asm_path[:-4] + '.exe'} {asm_path[:-3] + 'o'}"
+print(comando, "\n") if verbose else None
 os.system(comando)
 
+print("[CMD] Cache deletion")
+print(f"rm {asm_path}\nrm {asm_path[:-3] + 'o'}", "\n") if verbose else None
+os.remove(asm_path)
+os.remove(asm_path[:-3] + 'o')
+
+
 print("[CMD] Running")
-comando = f"./{asm_path[:-4] + '.out'}"
-print(comando)
+comando = f"{asm_path[:-4] + '.exe'}"
+print(comando, "\n") if verbose else None
 os.system(comando)
