@@ -1,5 +1,5 @@
-PUSH 19
-PUSH 19
+READ
+READ
 SUB
 JUMP.EQ.0 L1
 PRINT "not equal"

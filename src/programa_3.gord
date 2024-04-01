@@ -1,4 +1,4 @@
-PUSH 69
+READ
 JUMP.EQ 0 L2
 JUMP.GT.0 L0
 PRINT "Negative"
