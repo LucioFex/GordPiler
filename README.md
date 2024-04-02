@@ -29,7 +29,7 @@ Para compilar un programa escrito en el lenguaje .gord, sigue estos pasos:
 
 3. El compilador generará un archivo ensamblador (.asm) basado en tu programa .gord.
 4. Luego, el compilador ensambla y enlaza el archivo .asm generado para crear un ejecutable.
-5. Finalmente, el ejecutable resultante se ejecuta y se muestra la salida del programa.
+5. Finalmente, el ejecutable resultante se ejecuta y se muestra la salida del programa donde deberan ingresar 2 números.
 
 ## Ejemplo
 
