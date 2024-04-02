@@ -24,7 +24,7 @@ Para compilar un programa escrito en el lenguaje .gord, sigue estos pasos:
 2. Ejecuta el compilador de la siguiente manera:
 
     ```bash
-    python gordpiler.py tu_programa.gord
+    python compilador.py programa_1.gord verbose
     ```
 
 3. El compilador generará un archivo ensamblador (.asm) basado en tu programa .gord.

@@ -80,7 +80,11 @@ for ip in range(len(programa)):
 Compilación a Assembly
 '''
 #creamos el archivo .asm
-asm_path = path_programa.rsplit('.', 1)[0] + ".asm"
+if not os.path.exists("asm"):
+    os.mkdir("asm")
+
+
+asm_path = os.path.join("asm", path_programa.rsplit('.', 1)[0] + ".asm")
 salida = open(asm_path, "w")
 
 
@@ -215,17 +219,16 @@ print(comando, "\n") if verbose else None
 os.system(comando)
 
 print("[CMD] Linking")
-comando = f"gcc -o {asm_path[:-4] + '.exe'} {asm_path[:-3] + 'o'}"
+comando = f"gcc -o {path_programa.rsplit('.', 1)[0]+ '.exe'} {asm_path[:-3] + 'o'}"
 print(comando, "\n") if verbose else None
 os.system(comando)
 
 print("[CMD] Cache deletion")
-print(f"rm {asm_path}\nrm {asm_path[:-3] + 'o'}", "\n") if verbose else None
-os.remove(asm_path)
+print(f"rm {asm_path[:-3] + 'o'}", "\n") if verbose else None
 os.remove(asm_path[:-3] + 'o')
 
 
 print("[CMD] Running")
-comando = f"{asm_path[:-4] + '.exe'}"
+comando = f"{path_programa.rsplit('.', 1)[0] + '.exe'}"
 print(comando, "\n") if verbose else None
 os.system(comando)
