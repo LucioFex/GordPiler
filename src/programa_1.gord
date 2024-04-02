@@ -1,10 +1,11 @@
+IMPRIMIR "Eliga un numero, si es distinto de 100 se lo dire: "
 LEER
-LEER
+ALMACENAR 100
 RESTAR
 SALTAR_SI_0 L1
-IMPRIMIR "not equal"
+IMPRIMIR "Es distinto"
 TERMINAR
 
 L1:
-IMPRIMIR "equal"
+IMPRIMIR "Es igual"
 TERMINAR
