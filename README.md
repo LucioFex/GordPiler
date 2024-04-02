@@ -42,17 +42,29 @@ Para compilar un programa escrito en el lenguaje .gord, sigue estos pasos:
 Supongamos que tenemos el siguiente programa en .gord:
 
 ```plaintext
-READ
-READ
-SUB
-JUMP.EQ.0 L1
-PRINT "not equal"
-HALT
+LEER
+SALTAR_SI_0 L2
+SALTAR_SI_MAYOR_0 L0
+TERMINAR
+
+L0:
+ALMACENAR 3
+RESTAR
+SALTAR_SI_0 L1
+SALTAR_SI_MAYOR_0 L0
+IMPRIMIR "No divisible por 3"
+TERMINAR
 
 L1:
-PRINT "equal"
-HALT
+IMPRIMIR "Divisible por 3"
+TERMINAR
+
+L2:
+IMPRIMIR "Cero"
+TERMINAR
 ```
+
+El mismo recibe un número, e indica si es divisible por 3 o no (en caso se ser 0, de dice que es "cero" directamente).
 
 ## Autores
 
