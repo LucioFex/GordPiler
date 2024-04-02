@@ -1,6 +1,6 @@
 # GordPiler
 
-GordPiler es un compilador simple desarrollado en python que traduce un lenguaje de programación personalizado (denominado ".gord") a ensamblador x86_64.
+GordPiler es un compilador simple desarrollado en Python, traduce el lenguaje de programación personalizado (denominado ".gord") a ensamblador (con la convención utilizada para sistemas operativos Windows 10 de 64 bits, INTEL/AMD - x86_64).
 
 ## Características
 
@@ -12,9 +12,10 @@ GordPiler es un compilador simple desarrollado en python que traduce un lenguaje
 
 ## Requisitos
 
-- Python 3.x
-- NASM (Netwide Assembler)
-- GCC (GNU Compiler Collection)
+- Python 3.11.x.
+- NASM 2.16 (Netwide Assembler).
+- GCC 12.2.x (GNU Compiler Collection).
+- OS Windows 10.
 
 ## Uso
 
@@ -28,8 +29,9 @@ Para compilar un programa escrito en el lenguaje .gord, sigue estos pasos:
     ```
 
 3. El compilador generará un archivo ensamblador (.asm) basado en tu programa .gord.
-4. Luego, el compilador ensambla y enlaza el archivo .asm generado para crear un ejecutable.
-5. Finalmente, el ejecutable resultante se ejecuta y se muestra la salida del programa donde deberan ingresar 2 números.
+4. Luego, el compilador ensambla y genera un archivo binario, pasando de uno .asm a .o.
+5. Posterior a esto, se toma este archivo binario y se enlaza a uno ejecutable mediante GCC.
+6. Finalmente, el .exe resultante se ejecuta y se muestra la salida del programa escrito en el lenguaje .gord.
 
 ## Ejemplo
 
