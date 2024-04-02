@@ -144,7 +144,7 @@ extern scanf
 main:
 \tPUSH rbp
 \tMOV rbp, rsp
-\tSUB rsp, 64
+\tSUB rsp, 32
 """)
 
 
