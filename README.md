@@ -1,7 +1,7 @@
 # GordPiler
 
 <h3>
-    GordPiler es un compilador simple, desarrollado en Python.<br>
+    GordPiler es un compilador minimalista, desarrollado en Python.<br>
     Traduce el lenguaje de programación personalizado (denominado ".gord") a ensamblador (con la convención utilizada para sistemas operativos Windows 10 de 64 bits, INTEL/AMD - x86_64).
 </h3>
 El objetivo de este proyecto es cumplir con los requerimientos del trabajo práctico 2 de la materia "Lenguajes Formales y Teoría de la Computación" de la UCEMA (ININF).
